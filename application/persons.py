@@ -1,9 +1,4 @@
 class Person(object):
-    def __init__(self, name, position):
-        """
-                Initialize new person
-        """
-        pass
 
     def add_person(self, name, position, wants_accommodation='N'):
         """
