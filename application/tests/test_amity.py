@@ -26,3 +26,7 @@ class TestAmity(object):
         amity = Amity()
         assert_equal(amity.print_unallocated('file_name'), True,
                      'Failed to print unallocated people to file')
+
+    def test_check_db(self):
+        amity = Amity()
+        assert_equal(amity.check_db_name('db name'), True, 'Invalid DB name')

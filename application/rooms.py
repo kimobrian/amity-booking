@@ -15,6 +15,10 @@ class Room(Amity):
         """
         pass
 
+    def check_room(self, room_name):
+        '''Check if the room(name) exists'''
+        pass
+
 
 class Office(Room):
     pass

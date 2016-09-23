@@ -10,6 +10,10 @@ class Amity(object):
         """
         pass
 
+    def check_db_name(self, db_name):
+        '''Check if db file exists'''
+        pass
+        
     def load_state(self, db_name):
         """
         Loads Amity infromation from database
@@ -22,6 +26,3 @@ class Amity(object):
                 Outputs to file if filenam eis provided
         """
         pass
-
-    def __str__(self):
-        print("Welcome to Amity Facility")

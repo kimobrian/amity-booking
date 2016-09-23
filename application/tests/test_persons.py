@@ -1,5 +1,5 @@
 from application.persons import Person
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_in
 
 
 class TestPersons(object):
@@ -19,3 +19,17 @@ class TestPersons(object):
         person = Person()
         assert_equal(person.load_people(), True,
                      'Failed to load people from file')
+
+    def test_validate_position(position):
+        person = Person()
+        assert_in(person.validate_position('student'), [
+                  'STAFF', 'FELLOW', 'staff', 'fellow'], 'Invalid position')
+
+    def test_validate_person_id(self):
+        person = Person()
+        assert_equal(person.validate_person_id('id'), True, 'Invalid ID')
+
+    def test_validate_storage_file(self):
+        person = Person()
+        assert_equal(person.validate_storage_file(
+            'file name'), True, 'Invalid storage file name')

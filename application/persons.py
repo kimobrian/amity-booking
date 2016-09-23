@@ -7,10 +7,22 @@ class Person(object):
         """
         pass
 
+    def validate_position(self, position):
+        '''Check whether position is STAFF or FELLOW'''
+        pass
+
+    def validate_person_id(self, person_id):
+        '''Check whether person id is valid(exists)'''
+        pass
+
     def reallocate_person(self, person_id, new_room):
         """
         Reallocates a person to a new room
         """
+        pass
+
+    def validate_storage_file(self, storage_file):
+        '''Tests if the file name for storing people exists'''
         pass
 
     def load_people(self):
