@@ -13,7 +13,7 @@ class Amity(object):
     def check_db_name(self, db_name):
         '''Check if db file exists'''
         pass
-        
+
     def load_state(self, db_name):
         """
         Loads Amity infromation from database
