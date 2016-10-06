@@ -1,13 +1,15 @@
 from amity import Amity
+from db_operations import create_room as c_room
+from tabulate import tabulate
 
 
-class Room(Amity):
+class RoomImplementation(Amity):
 
-    def create_room(self, room_type, room_name):
+    def create_room(self, room_name):
         """
                 Creates new room
         """
-        pass
+        return c_room(room_name)
 
     def print_room(self, room_name):
         """
@@ -15,14 +17,10 @@ class Room(Amity):
         """
         pass
 
-    def check_room(self, room_name):
-        '''Check if the room(name) exists'''
-        pass
 
-
-class Office(Room):
+class Office(RoomImplementation):
     pass
 
 
-class LivingSpace(Room):
+class LivingSpace(RoomImplementation):
     pass

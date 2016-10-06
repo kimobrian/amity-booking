@@ -1,3 +1,6 @@
+from application.db_operations import save_person, validate_position, validate_person_id, reallocate_person
+
+
 class Person(object):
 
     def add_person(self, name, position, wants_accommodation='N'):
@@ -5,21 +8,21 @@ class Person(object):
                 Add person to facility and alocates them a room
                 if they want accommodation
         """
-        pass
+        return save_person(name, position, wants_accommodation)
 
     def validate_position(self, position):
         '''Check whether position is STAFF or FELLOW'''
-        pass
+        return validate_position(position)
 
-    def validate_person_id(self, person_id):
+    def validate_person_id_number(self, person_id):
         '''Check whether person id is valid(exists)'''
-        pass
+        return validate_person_id(person_id)
 
     def reallocate_person(self, person_id, new_room):
         """
         Reallocates a person to a new room
         """
-        pass
+        return reallocate_person(person_id, new_room)
 
     def validate_storage_file(self, storage_file):
         '''Tests if the file name for storing people exists'''
