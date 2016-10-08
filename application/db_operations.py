@@ -4,6 +4,8 @@ from db_models import Base, Person, Room
 from sqlalchemy.orm.exc import NoResultFound
 import random
 import os
+import sys
+from os.path import isfile, getsize
 from tabulate import tabulate
 from db_models import create_db, create_session_db
 
@@ -13,6 +15,12 @@ engine = create_engine('sqlite:///session_amity.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+
+def check_session_db():
+    if not os.path.exists('session_amity.db'):
+        print('Application Session Database Missing')
+        return False
 
 
 def switch_session(sess):
@@ -313,7 +321,6 @@ def reallocate_person(id_number, new_room):
 def validate_sqlite_db(db_name):
     ''' Validate if its indeed an SQlite3 db '''
     ''' SQLite3 db headers are 100 bytes '''
-    from os.path import isfile, getsize
     if not isfile(db_name):
         return 'File Does Not Exist'
     if getsize(db_name) < 100:
@@ -361,12 +368,15 @@ def load_db_state(db_name):
     people = session.query(Person).all()
     rooms = session.query(Room).all()
 
+    people_count = len(people)
+    room_count = len(rooms)
+
     engine = create_engine('sqlite:///session_amity.db')
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    if people > 0:
+    if people_count > 0:
         for person in people:
             person_obj = Person()
             person_obj.id_number = person.id_number
@@ -377,8 +387,10 @@ def load_db_state(db_name):
             person_obj.gender = person.gender
             session.add(person_obj)
             session.commit()
+    else:
+        print('No People to Load')
 
-    if rooms > 0:
+    if room_count > 0:
         for room in rooms:
             room_obj = Room()
             room_obj.room_name = room.room_name
@@ -388,16 +400,24 @@ def load_db_state(db_name):
             room_obj.gender = room.gender
             session.add(room_obj)
             session.commit()
+    else:
+        print('No Rooms to Load')
+
     if os.path.exists(db_name):
         os.remove(db_name)
+    print('Data Loaded Successfully')
 
     return True
 
 
-def save_state(db_name='amity.db'):
-    # if os.path.exists(db_name):
-    #     os.remove(db_name)
+def save_state(db_name='default_amity.db'):
+    import os
+    if os.path.exists(db_name):
+        os.remove(db_name)
     create_db(db_name)
+    if not os.path.exists('session_amity.db'):
+        print('No Session Database for Application State')
+        return 'No Session'
     global session
     engine = create_engine('sqlite:///session_amity.db')
     Base.metadata.bind = engine
@@ -407,12 +427,15 @@ def save_state(db_name='amity.db'):
     people = session.query(Person).all()
     rooms = session.query(Room).all()
 
+    people_count = len(people)
+    room_count = len(rooms)
+
     engine = create_engine('sqlite:///' + db_name)
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    if people > 0:
+    if people_count > 0:
         for person in people:
             person_obj = Person()
             person_obj.id_number = person.id_number
@@ -424,7 +447,7 @@ def save_state(db_name='amity.db'):
             session.add(person_obj)
             session.commit()
 
-    if rooms > 0:
+    if room_count > 0:
         for room in rooms:
             room_obj = Room()
             room_obj.room_name = room.room_name
@@ -437,6 +460,8 @@ def save_state(db_name='amity.db'):
     import os
     if os.path.exists('session_amity.db'):
         os.remove('session_amity.db')
+
+    print('Application State Saved Successfully')
 
     return True
 
@@ -458,17 +483,62 @@ def print_unallocated(file_name=None):
 
 def print_allocations(file_name=None):
     people = session.query(Person).all()
-    if people:
-        data = []
-        for person in people:
-            fields = [person.person_id, person.id_number, person.name,
-                      person.position, person.office, person.livingspace]
-            data.append(fields)
-        print tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
-    if file_name != None:
-        pass
+    rooms = session.query(Room).all()
+    if len(rooms) > 0:
+        for room in rooms:
+            room_name = room.room_name
+            room_type = room.room_type
+            print(room_name)
+            print('-' * 100)
+            if file_name != None:
+                with open('data_files/' + file_name + '.txt', 'a') as output:
+                    if rooms.index(room) != 0:
+                        output.write('\n')
+                    output.write(room_name)
+                    output.write('\n')
+                    output.write('-' * 100)
+                    output.write('\n')
+            if room_type == 'OFFICE':
+                people_in_room = session.query(
+                    Person).filter_by(office=room_name).all()
+                if len(people_in_room) > 0:
+                    for person in people_in_room:
+                        sys.stdout.write(person.name + ', ')
+                        if file_name != None:
+                            with open('data_files/' + file_name + '.txt', 'a') as output:
+                                output.write(person.name + ', ')
+                else:
+                    print('Room Empty')
+            elif room_type == 'LIVINGSPACE':
+                people_in_room = session.query(Person).filter_by(
+                    livingspace=room_name).all()
+                if len(people_in_room) > 0:
+                    for person in people_in_room:
+                        sys.stdout.write(person.name + ', ')
+                        if file_name != None:
+                            with open('data_files/' + file_name + '.txt', 'a') as output:
+                                output.write(person.name + ', ')
+            print('\n')
 
 
 def load_people(file_name):
     '''Load people from a text file and allocate them to rooms'''
-    pass
+    full_path = 'data_files' + file_name + '.txt'
+    if file_name:
+        if os.path.isfile(full_path) and os.path.getsize(full_path) > 0:
+            with open('data_files/' + file_name + '.txt') as input_file:
+                content = input_file.readlines()
+            for line in content:
+                line_values = line.split()
+                name = line_values[0] + ' ' + line_values[1]
+                position = line_values[2]
+                try:
+                    wants_accommodation = line_values[3]
+                except:
+                    wants_accommodation = 'N'
+                    pass
+                print("[ " + name + "  " + position + " ]")
+                print(save_person(name, position, wants_accommodation))
+        else:
+            print('File is empty or does not Exist')
+            return False
