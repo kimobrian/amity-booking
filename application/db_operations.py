@@ -3,18 +3,22 @@ from sqlalchemy.orm import sessionmaker
 from db_models import Base, Person, Room
 from sqlalchemy.orm.exc import NoResultFound
 import random
+import os
 from tabulate import tabulate
+from db_models import create_db, create_session_db
 
-engine = create_engine('sqlite:///amity.sqlite')
+# Room's model operations
+
+engine = create_engine('sqlite:///session_amity.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-# Room's model operations
 
 def switch_session(sess):
-    global session 
+    global session
     session = sess
+
 
 def get_room_occupants(room_name):
     '''Returns current number of occupants in a room'''
@@ -43,7 +47,7 @@ def print_room_details(room_name):
                 fields = [person.person_id, person.name,
                           person.position, person.office, person.livingspace]
                 data.append(fields)
-            print tabulate(data, headers=['Id', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
+            return tabulate(data, headers=['Id', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
         else:
             return 'Room is Empty'
 
@@ -115,7 +119,7 @@ def create_room(room_name):
         elif room_type.upper() == 'B':
             room.room_type = 'LIVINGSPACE'
             room.capacity = 4
-            gender = raw_input('Room Gender: Enter M for Male, F for female')
+            gender = raw_input('Room Gender: Enter M for Male, F for female: ')
             while gender.upper() not in ['F', 'M']:
                 gender = raw_input(
                     'Room Gender: Enter M fro Male, F for female: ')
@@ -284,10 +288,11 @@ def reallocate_person(id_number, new_room):
                         return 'Person is in that Room'
                     if room_type == 'OFFICE':
                         current_room = session.query(Room).filter_by(
-                            room_name = person_details.office).one()
+                            room_name=person_details.office).one()
                     elif room_type == 'LIVINGSPACE':
                         if person_details.gender != new_room_gender:
-                            print('You can\'t rallocate to a living space of opposite gender')
+                            print(
+                                'You can\'t rallocate to a living space of opposite gender')
                             return 'Invalid Reallocation'
                         current_room = session.query(Room).filter_by(
                             room_name=person_details.livingspace).one()
@@ -337,15 +342,133 @@ def validate_db_tables(db_name):
 
 def load_db_state(db_name):
     ''' Load data from another database file '''
+    if os.path.exists('session_amity.db'):
+        os.remove('session_amity.db')
+    create_session_db()
     db_status = validate_sqlite_db(db_name)
     if db_status is False:
         return 'Invalid DB'
     table_status = validate_db_tables(db_name)
     if table_status is False:
         return 'Invalid DB Format'
+
+    global session
     engine = create_engine('sqlite:///' + db_name)
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
-    global session 
     session = DBSession()
+
+    people = session.query(Person).all()
+    rooms = session.query(Room).all()
+
+    engine = create_engine('sqlite:///session_amity.db')
+    Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    if people > 0:
+        for person in people:
+            person_obj = Person()
+            person_obj.id_number = person.id_number
+            person_obj.name = person.name
+            person_obj.position = person.position
+            person_obj.office = person.office
+            person_obj.livingspace = person.livingspace
+            person_obj.gender = person.gender
+            session.add(person_obj)
+            session.commit()
+
+    if rooms > 0:
+        for room in rooms:
+            room_obj = Room()
+            room_obj.room_name = room.room_name
+            room_obj.room_type = room.room_type
+            room_obj.capacity = room.capacity
+            room_obj.current_occupants = room.current_occupants
+            room_obj.gender = room.gender
+            session.add(room_obj)
+            session.commit()
+    if os.path.exists(db_name):
+        os.remove(db_name)
+
     return True
+
+
+def save_state(db_name='amity.db'):
+    # if os.path.exists(db_name):
+    #     os.remove(db_name)
+    create_db(db_name)
+    global session
+    engine = create_engine('sqlite:///session_amity.db')
+    Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    people = session.query(Person).all()
+    rooms = session.query(Room).all()
+
+    engine = create_engine('sqlite:///' + db_name)
+    Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    if people > 0:
+        for person in people:
+            person_obj = Person()
+            person_obj.id_number = person.id_number
+            person_obj.name = person.name
+            person_obj.position = person.position
+            person_obj.office = person.office
+            person_obj.livingspace = person.livingspace
+            person_obj.gender = person.gender
+            session.add(person_obj)
+            session.commit()
+
+    if rooms > 0:
+        for room in rooms:
+            room_obj = Room()
+            room_obj.room_name = room.room_name
+            room_obj.room_type = room.room_type
+            room_obj.capacity = room.capacity
+            room_obj.current_occupants = room.current_occupants
+            room_obj.gender = room.gender
+            session.add(room_obj)
+            session.commit()
+    import os
+    if os.path.exists('session_amity.db'):
+        os.remove('session_amity.db')
+
+    return True
+
+
+def print_unallocated(file_name=None):
+    people = session.query(Person).all()
+    if people:
+        data = []
+        for person in people:
+            if person.position == 'FELLOW':
+                if person.office == 'N' or person.livingspace == 'N':
+                    fields = [person.person_id, person.id_number, person.name,
+                              person.position, person.office, person.livingspace]
+                    data.append(fields)
+        print tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
+    if file_name != None:
+        pass
+
+
+def print_allocations(file_name=None):
+    people = session.query(Person).all()
+    if people:
+        data = []
+        for person in people:
+            fields = [person.person_id, person.id_number, person.name,
+                      person.position, person.office, person.livingspace]
+            data.append(fields)
+        print tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
+    if file_name != None:
+        pass
+
+
+def load_people(file_name):
+    '''Load people from a text file and allocate them to rooms'''
+    pass

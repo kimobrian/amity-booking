@@ -1,6 +1,5 @@
 from amity import Amity
-from db_operations import create_room as c_room
-from tabulate import tabulate
+from db_operations import create_room as c_room, print_room_details
 
 
 class RoomImplementation(Amity):
@@ -15,7 +14,7 @@ class RoomImplementation(Amity):
         """
                 Prints all information about people in a room
         """
-        pass
+        print(print_room_details(room_name))
 
 
 class Office(RoomImplementation):

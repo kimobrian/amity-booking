@@ -2,8 +2,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from tabulate import tabulate
-from sqlalchemy_utils.types.choice import ChoiceType
-from unittest import TestCase
 
 Base = declarative_base()
 
@@ -19,7 +17,8 @@ class Person(Base):
     gender = Column(String(20), nullable=False)
 
     def __repr__(self):
-        table = [[self.person_id, self.name,self.position, self.office, self.livingspace]]
+        table = [[self.person_id, self.name,
+                  self.position, self.office, self.livingspace]]
         return tabulate(table, headers=["Id", "Name", "Position", "Office", "Livingspace"], tablefmt='grid')
 
 
@@ -38,6 +37,13 @@ class Room(Base):
         return tabulate(table, headers=["Room Id", "Room Name", "Room Type", "Capacity", "Current Occupants"], tablefmt='grid')
 
 
-#Transfer to app.py
-engine = create_engine("sqlite:///tests/test_amity.db")
-Base.metadata.create_all(engine)
+def create_test_session_db():
+    engine = create_engine("sqlite:///tests/test_session_amity.db")
+    global Base
+    Base.metadata.create_all(engine)
+
+
+def create_test_db(db_name='sqlite:///tests/test_amity.db'):
+    engine = create_engine(db_name)
+    global Base
+    Base.metadata.create_all(engine)

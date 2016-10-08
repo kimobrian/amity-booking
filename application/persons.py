@@ -1,7 +1,13 @@
-from application.db_operations import save_person, validate_position, validate_person_id, reallocate_person
+from db_operations import save_person, validate_position, validate_person_id, reallocate_person, save_state
+import os
+from db_models import create_session_db
 
 
 class Person(object):
+
+    def __init__(self):
+        if not os.path.exists('session_amity.db'):
+            create_session_db()
 
     def add_person(self, name, position, wants_accommodation='N'):
         """
@@ -33,6 +39,7 @@ class Person(object):
                 Loads the available people records from text file
         """
         pass
+
 
 
 class Fellow(Person):
