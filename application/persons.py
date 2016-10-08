@@ -30,17 +30,6 @@ class Person(object):
         """
         return reallocate_person(person_id, new_room)
 
-    def validate_storage_file(self, storage_file):
-        '''Tests if the file name for storing people exists'''
-        pass
-
-    def load_people(self):
-        """
-                Loads the available people records from text file
-        """
-        pass
-
-
 
 class Fellow(Person):
     pass
