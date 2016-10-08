@@ -37,13 +37,13 @@ class Room(Base):
         return tabulate(table, headers=["Room Id", "Room Name", "Room Type", "Capacity", "Current Occupants"], tablefmt='grid')
 
 
-def create_test_session_db():
+def create_session_db():
     engine = create_engine("sqlite:///tests/test_session_amity.db")
     global Base
     Base.metadata.create_all(engine)
 
 
-def create_test_db(db_name='sqlite:///tests/test_amity.db'):
-    engine = create_engine(db_name)
+def create_app_db(db_name='test_amity.db'):
+    engine = create_engine('sqlite:///tests/' + db_name)
     global Base
     Base.metadata.create_all(engine)

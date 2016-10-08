@@ -2,20 +2,20 @@ from application.db_operations import *
 from application.rooms import RoomImplementation
 from application.amity import Amity
 from application.persons import Fellow, Person, Staff
-from test import Person, Room
-from nose.tools import assert_equal, assert_is
+from test import Room, Person
+from nose.tools import assert_equal
 import os
 import mock
-from test import create_test_session_db, create_test_db
-from session_setup import test_session, session_b
 
+from setup_test import test_session, db_session
+from test import create_session_db
 
 class TestOperations(object):
 
     @classmethod
     def setup_class(self):
-        print('Creating Test Database')
-        create_test_session_db()
+        create_session_db()
+        switch_session(test_session)
         room = Room()
         room.room_name = 'DAUGHTRY'
         room.room_type = 'OFFICE'
@@ -25,8 +25,6 @@ class TestOperations(object):
         test_session.add(room)
         test_session.commit()
 
-
-        switch_session(test_session)
         with mock.patch('__builtin__.raw_input', side_effect=['25904563', 'F']):
             save_person('PERCILA NJIRA', 'STAFF')
 
