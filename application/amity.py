@@ -1,4 +1,4 @@
-from db_operations import validate_sqlite_db, load_db_state, save_state, print_unallocated, print_allocations
+from db_operations import validate_sqlite_db, load_db_state, save_state, print_unallocated, print_allocations, load_people
 
 
 class Amity(object):
@@ -31,7 +31,7 @@ class Amity(object):
         """
         print_unallocated()
 
-    def load_people(self):
+    def load_people(self, filename):
         '''Load people from a text file and allocate them rooms'''
         '''Text files should be in data_files folder'''
-        pass
+        load_people(file_name)

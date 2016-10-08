@@ -3,4 +3,4 @@ database.sqlite
 .coverage
 *.db
 *.sqlite
-*.txt
+application/data_files/
