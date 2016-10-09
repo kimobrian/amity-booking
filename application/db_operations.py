@@ -8,6 +8,7 @@ import sys
 from os.path import isfile, getsize
 from tabulate import tabulate
 from db_models import create_db, create_session_db
+from termcolor import colored
 
 # Room's model operations
 
@@ -60,11 +61,7 @@ def print_room_details(room_name):
             return 'Room is Empty'
 
     except NoResultFound:
-        return 'Invalid Room Name'
-
-
-def print_room_allocations(filename=None):
-    ''' print all allocations for the amity facility'''
+        return 'Invalid Room Name / No Room By Name: ' + room_name
 
 
 def check_room_name(room_name):
@@ -275,6 +272,10 @@ def reallocate_person(id_number, new_room):
     if id_status == 'Id Missing':
         return id_status
     else:
+        person_details = session.query(
+            Person).filter_by(id_number=id_number).one()
+        if person_details.office == new_room.upper() or person_details.livingspace == new_room.upper():
+            return 'Person is in that Room'
         room_status = validate_room_name(new_room)
         if room_status == 'Invalid Room Name':
             return room_status
@@ -287,13 +288,10 @@ def reallocate_person(id_number, new_room):
                     room_name=new_room.upper()).one()
                 room_type = room.room_type
                 new_room_gender = room.gender
+                room_occupants = room.current_occupants
                 if is_room_full(new_room) == 'Room Full':
                     return 'Room Full'
                 else:
-                    person_details = session.query(
-                        Person).filter_by(id_number=id_number).one()
-                    if person_details.office == new_room.upper() or person_details.livingspace == new_room.upper():
-                        return 'Person is in that Room'
                     if room_type == 'OFFICE':
                         current_room = session.query(Room).filter_by(
                             room_name=person_details.office).one()
@@ -307,10 +305,10 @@ def reallocate_person(id_number, new_room):
                     session.query(Room).filter_by(room_name=current_room.room_name).update(
                         {'current_occupants': current_room.current_occupants - 1})
                     session.query(Room).filter_by(room_name=new_room.upper()).update(
-                        {'current_occupants': current_room.current_occupants + 1})
+                        {'current_occupants': room_occupants + 1})
                     if room_type == 'OFFICE':
                         session.query(Person).filter_by(
-                            id_number=id_number).update({'office': new_room})
+                            id_number=id_number).update({'office': new_room.upper()})
                     elif room_type == 'LIVINGSPACE':
                         session.query(Person).filter_by(
                             id_number=id_number).update({'livingspace': new_room.upper()})
@@ -388,7 +386,7 @@ def load_db_state(db_name):
             session.add(person_obj)
             session.commit()
     else:
-        print('No People to Load')
+        print colored('No People to Load','red')
 
     if room_count > 0:
         for room in rooms:
@@ -401,12 +399,11 @@ def load_db_state(db_name):
             session.add(room_obj)
             session.commit()
     else:
-        print('No Rooms to Load')
+        print colored('No Rooms to Load','red')
 
     if os.path.exists(db_name):
         os.remove(db_name)
-    print('Data Loaded Successfully')
-
+    print colored('Data Loaded Successfully','green')
     return True
 
 
@@ -416,7 +413,7 @@ def save_state(db_name='default_amity.db'):
         os.remove(db_name)
     create_db(db_name)
     if not os.path.exists('session_amity.db'):
-        print('No Session Database for Application State')
+        print colored('No Session Database for Application State','red')
         return 'No Session'
     global session
     engine = create_engine('sqlite:///session_amity.db')
@@ -457,16 +454,17 @@ def save_state(db_name='default_amity.db'):
             room_obj.gender = room.gender
             session.add(room_obj)
             session.commit()
-    import os
-    if os.path.exists('session_amity.db'):
-        os.remove('session_amity.db')
 
-    print('Application State Saved Successfully')
+    print colored('Application State Saved Successfully','green')
 
     return True
 
 
 def print_unallocated(file_name=None):
+    if file_name is not None:
+        path = 'data_files/'+file_name+'.txt'
+        if os.path.exists(path):
+            os.remove(path)
     people = session.query(Person).all()
     if people:
         data = []
@@ -477,12 +475,24 @@ def print_unallocated(file_name=None):
                               person.position, person.office, person.livingspace]
                     data.append(fields)
         print tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
-    if file_name != None:
-        pass
-
+        if file_name is not None:
+            with open('data_files/' + file_name + '.txt', 'a') as output:
+                output.write(tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid'))
 
 def print_allocations(file_name=None):
+    if file_name is not None:
+        path = 'data_files/'+file_name+'.txt'
+        if os.path.exists(path):
+            os.remove(path)
     people = session.query(Person).all()
+    if len(people) == 0:
+        print('Available Rooms:')
+        rooms = session.query(Room).all()
+        if len(rooms)>0:
+            for room in rooms:
+                print(room.room_name)
+        print colored('No People have been Allocated Rooms Yet','red')
+        return
     rooms = session.query(Room).all()
     if len(rooms) > 0:
         for room in rooms:
@@ -523,7 +533,7 @@ def print_allocations(file_name=None):
 
 def load_people(file_name):
     '''Load people from a text file and allocate them to rooms'''
-    full_path = 'data_files' + file_name + '.txt'
+    full_path = 'data_files/' + file_name + '.txt'
     if file_name:
         if os.path.isfile(full_path) and os.path.getsize(full_path) > 0:
             with open('data_files/' + file_name + '.txt') as input_file:
@@ -536,9 +546,11 @@ def load_people(file_name):
                     wants_accommodation = line_values[3]
                 except:
                     wants_accommodation = 'N'
-                    pass
                 print("[ " + name + "  " + position + " ]")
-                print(save_person(name, position, wants_accommodation))
+                save_status = save_person(name, position, wants_accommodation)
+                if save_status == 'No Spaced Offices':
+                    print colored('Please Create rooms before allocating people', 'red')
+                    return
         else:
-            print('File is empty or does not Exist')
+            print colored('File is empty or does not Exist','red')
             return False

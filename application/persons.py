@@ -1,6 +1,8 @@
-from db_operations import save_person, validate_position, validate_person_id, reallocate_person, save_state
+from db_operations import save_person, validate_position, validate_person_id, reallocate_person, save_state, switch_session
 import os
-from db_models import create_session_db
+from db_models import create_session_db, Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 class Person(object):
@@ -8,6 +10,11 @@ class Person(object):
     def __init__(self):
         if not os.path.exists('session_amity.db'):
             create_session_db()
+            engine = create_engine('sqlite:///session_amity.db')
+            Base.metadata.bind = engine
+            DBSession = sessionmaker(bind=engine)
+            session = DBSession()
+            switch_session(session)
 
     def add_person(self, name, position, wants_accommodation='N'):
         """

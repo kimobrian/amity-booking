@@ -1,12 +1,24 @@
-from db_operations import validate_sqlite_db, load_db_state, save_state, print_unallocated, print_allocations, load_people
-
+from db_operations import validate_sqlite_db, load_db_state, save_state, print_unallocated, print_allocations, load_people, switch_session
+import os
+from db_models import create_session_db, Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 class Amity(object):
     '''Amity class'''
 
+    def __init__(self):
+        if not os.path.exists('session_amity.db'):
+            create_session_db()
+            engine = create_engine('sqlite:///session_amity.db')
+            Base.metadata.bind = engine
+            DBSession = sessionmaker(bind=engine)
+            session = DBSession()
+            switch_session(session)
+
     def print_allocations(self, filename=None):
         '''Prints a list of allocations to the screen'''
-        print_allocations(filename)
+        return print_allocations(filename)
 
     def save_state(self, db_name='default_amity.db'):
         """
@@ -29,9 +41,9 @@ class Amity(object):
                 Prints unallocated people. 
                 Outputs to file if filename is provided
         """
-        print_unallocated()
+        print_unallocated(output_file)
 
     def load_people(self, filename):
         '''Load people from a text file and allocate them rooms'''
         '''Text files should be in data_files folder'''
-        load_people(file_name)
+        load_people(filename)

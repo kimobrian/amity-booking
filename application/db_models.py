@@ -19,7 +19,7 @@ class Person(Base):
     def __repr__(self):
         table = [[self.person_id, self.id_number, self.name,
                   self.position, self.office, self.livingspace]]
-        return tabulate(table, headers=["Id","Work ID", "Name", "Position", "Office", "Livingspace"], tablefmt='grid')
+        return tabulate(table, headers=["Id", "Work ID", "Name", "Position", "Office", "Livingspace"], tablefmt='grid')
 
 
 class Room(Base):
@@ -44,6 +44,6 @@ def create_session_db():
 
 
 def create_db(db_name='amity.db'):
-    engine = create_engine('sqlite:///'+db_name)
+    engine = create_engine('sqlite:///' + db_name)
     global Base
     Base.metadata.create_all(engine)

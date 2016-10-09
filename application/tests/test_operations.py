@@ -26,7 +26,7 @@ class TestOperations(object):
         test_session.commit()
 
         with mock.patch('__builtin__.raw_input', side_effect=['25904563', 'F']):
-            save_person('PERCILA NJIRA', 'STAFF')
+            save_person('MARY WAMBUI', 'STAFF')
 
         room3 = Room()
         room3.room_name = 'LAVENDER'
@@ -64,12 +64,12 @@ class TestOperations(object):
             os.remove('tests/test_session_amity.db')
         if os.path.exists('tests/test_amity.db'):
             os.remove('tests/test_amity.db')
-        if os.path.exists('tests/tests/db.txt'):
+        if os.path.exists('tests/db.txt'):
             os.remove('tests/db.txt')
 
     def test_get_room_occupants(self):
         assert_equal(get_room_occupants('DAUGHTRY'),
-                     2, 'Room has more occupants')
+                     2, 'Room has '+str(get_room_occupants('DAUGHTRY'))+' occupants')
 
     def test_validate_room_name(self):
         '''Assert if room_name exists in the database '''
@@ -92,8 +92,8 @@ class TestOperations(object):
 
     def test_reallocate_person(self):
         '''Tests for room reallocation'''
-        room = test_session.query(Person).filter_by(id_number=25904563).one()
-        room_name = room.office
+        person = test_session.query(Person).filter_by(id_number=25904563).one()
+        room_name = person.office
         staff = Staff()
         fellow = Fellow()
         assert_equal(staff.reallocate_person(
@@ -137,7 +137,7 @@ class TestOperations(object):
 
     def test_print_room(self):
         assert_equal(print_room_details('Invalid Room Name'),
-                     'Invalid Room Name', 'Failed to print room information')
+                     'Invalid Room Name / No Room By Name: ' + 'Invalid Room Name', 'Failed to print room information')
 
     def test_check_db_name(self):
         amity = Amity()
