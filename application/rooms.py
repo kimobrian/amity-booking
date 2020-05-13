@@ -27,7 +27,7 @@ class RoomImplementation(Amity):
         """
                 Prints all information about people in a room
         """
-        print colored(print_room_details(room_name), 'green')
+        print(colored(print_room_details(room_name), 'green'))
 
 
 class Office(RoomImplementation):

@@ -108,11 +108,11 @@ def create_room(room_name):
     if room_exists is True:
         return 'Room name Unavailable'
     else:
-        room_type = raw_input(
+        room_type = input(
             'Enter room type, A for Office , B for Livingspace: ')
         while room_type.upper() not in ['A', 'B']:
             print('Invalid room type: Enter either A or B')
-            room_type = raw_input(
+            room_type = input(
                 'Enter room type, A for Office , B for Livingspace: ')
 
         room = Room()
@@ -124,9 +124,9 @@ def create_room(room_name):
         elif room_type.upper() == 'B':
             room.room_type = 'LIVINGSPACE'
             room.capacity = 4
-            gender = raw_input('Room Gender: Enter M for Male, F for female: ')
+            gender = input('Room Gender: Enter M for Male, F for female: ')
             while gender.upper() not in ['F', 'M']:
-                gender = raw_input(
+                gender = input(
                     'Room Gender: Enter M fro Male, F for female: ')
             room.gender = gender.upper()
         try:
@@ -205,19 +205,19 @@ def save_person(name, position, wants_accommodation='N'):
         return pos
     name_status = validate_name(name)
     if name_status == 'Invalid Name':
-        print 'Invalid Name: Name should be first and last names separated by a space'
+        print('Invalid Name: Name should be first and last names separated by a space')
         return 'Invalid Name'
-    id_number = raw_input('Enter an 8 digit ID Number: ')
+    id_number = input('Enter an 8 digit ID Number: ')
     while not id_number.isdigit() or len(id_number) != 8:
-        id_number = raw_input('Invalid ID. Enter an 8 digit ID Number: ')
+        id_number = input('Invalid ID. Enter an 8 digit ID Number: ')
 
     person = Person()
     person.name = name.upper()
     person.position = position.upper()
     person.id_number = id_number
-    gender = raw_input('Enter Gender: M for Male and F for Female: ')
+    gender = input('Enter Gender: M for Male and F for Female: ')
     while gender.upper() not in ['M', 'F']:
-        gender = raw_input('Enter Gender: M for Male and F for Female: ')
+        gender = input('Enter Gender: M for Male and F for Female: ')
     person.gender = gender.upper()
     if position.upper() == 'STAFF':
         offices = get_spaced_offices()
@@ -386,7 +386,7 @@ def load_db_state(db_name):
             session.add(person_obj)
             session.commit()
     else:
-        print colored('No People to Load','red')
+        print(colored('No People to Load','red'))
 
     if room_count > 0:
         for room in rooms:
@@ -399,11 +399,11 @@ def load_db_state(db_name):
             session.add(room_obj)
             session.commit()
     else:
-        print colored('No Rooms to Load','red')
+        print(colored('No Rooms to Load','red'))
 
     if os.path.exists(db_name):
         os.remove(db_name)
-    print colored('Data Loaded Successfully','green')
+    print(colored('Data Loaded Successfully','green'))
     return True
 
 
@@ -413,7 +413,7 @@ def save_state(db_name='default_amity.db'):
         os.remove(db_name)
     create_db(db_name)
     if not os.path.exists('session_amity.db'):
-        print colored('No Session Database for Application State','red')
+        print(colored('No Session Database for Application State','red'))
         return 'No Session'
     global session
     engine = create_engine('sqlite:///session_amity.db')
@@ -455,7 +455,7 @@ def save_state(db_name='default_amity.db'):
             session.add(room_obj)
             session.commit()
 
-    print colored('Application State Saved Successfully','green')
+    print(colored('Application State Saved Successfully','green'))
 
     return True
 
@@ -474,7 +474,7 @@ def print_unallocated(file_name=None):
                     fields = [person.person_id, person.id_number, person.name,
                               person.position, person.office, person.livingspace]
                     data.append(fields)
-        print tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid')
+        print(tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid'))
         if file_name is not None:
             with open('data_files/' + file_name + '.txt', 'a') as output:
                 output.write(tabulate(data, headers=['Id', 'ID Number', 'Name', 'Position', 'Office', 'Living Space'], tablefmt='grid'))
@@ -491,7 +491,7 @@ def print_allocations(file_name=None):
         if len(rooms)>0:
             for room in rooms:
                 print(room.room_name)
-        print colored('No People have been Allocated Rooms Yet','red')
+        print(colored('No People have been Allocated Rooms Yet','red'))
         return
     rooms = session.query(Room).all()
     if len(rooms) > 0:
@@ -549,8 +549,8 @@ def load_people(file_name):
                 print("[ " + name + "  " + position + " ]")
                 save_status = save_person(name, position, wants_accommodation)
                 if save_status == 'No Spaced Offices':
-                    print colored('Please Create rooms before allocating people', 'red')
+                    print(colored('Please Create rooms before allocating people', 'red'))
                     return
         else:
-            print colored('File is empty or does not Exist','red')
+            print(colored('File is empty or does not Exist','red'))
             return False

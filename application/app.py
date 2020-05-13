@@ -63,14 +63,14 @@ def intro():
     os.system("clear")
     cprint(figlet_format('\tAMITY', font='digital'),
                'green', attrs=['bold', 'blink'])
-    print colored(__doc__)
+    print(colored(__doc__))
 
 def safe_mode():
     '''Ensure user does not accidentally lose data on exit or keyboard interrupt '''
     '''Save state to deafult DB and destroy application session'''
     amity = Amity()
     if os.path.exists('session_amity.db'):
-        print colored('Saving Your Application State','yellow')
+        print(colored('Saving Your Application State','yellow'))
         amity.save_state()
         os.remove('session_amity.db')
 
@@ -97,17 +97,17 @@ class RoomAllocation(cmd.Cmd):
         if accommodation is None:
             save_status = person.add_person(name, position)
             if save_status == 'No Spaced Offices':
-                print colored('Please Create rooms before allocating people', 'red')
+                print(colored('Please Create rooms before allocating people', 'red'))
                 return
             else:
-                print colored(save_status, 'green')
+                print(colored(save_status, 'green'))
         elif accommodation is not None:
             save_status = person.add_person(name, position, accommodation)
             if save_status == 'No Spaced Offices':
-                print colored('Please Create rooms before allocating people', 'red')
+                print(colored('Please Create rooms before allocating people', 'red'))
                 return
             else:
-                print colored(save_status, 'green')
+                print(colored(save_status, 'green'))
 
     @docopt_cmd
     def do_reallocate_person(self, arg):
@@ -156,31 +156,31 @@ class RoomAllocation(cmd.Cmd):
         db_name = arg['--db']
         if db_name is not None:
             if os.path.exists(db_name):
-                print colored('You are about to override '+db_name+' DB which may have data:', 'red')
-                reply = raw_input(
+                print(colored('You are about to override '+db_name+' DB which may have data:', 'red'))
+                reply = input(
                     'Do you want to Continue. Y for yes | N for no: ')
                 while reply.upper() not in ['Y', 'N']:
                     print('Invalid Reply!!')
-                    reply = raw_input('Please Enter Y for yes | N for no: ')
+                    reply = input('Please Enter Y for yes | N for no: ')
                 if reply.upper() == 'Y':
-                    print colored('Overriding database ...','yellow')
+                    print(colored('Overriding database ...','yellow'))
                     amity.save_state(db_name)
                 else:
                     print('Please provide an alternative DB name for the command')
                     return
             else:
-                print colored('Saving database state ...', 'yellow')
+                print(colored('Saving database state ...', 'yellow'))
                 amity.save_state(db_name)
         
         else:   
             if os.path.exists('default_amity.db'):
                 print(
                     'You are about to override the default DB (default_amity.db) which may have data:')
-                reply = raw_input(
+                reply = input(
                     'Do you want to Continue. Y for yes | N for no: ')
                 while reply.upper() not in ['Y', 'N']:
                     print('Invalid Reply!!')
-                    reply = raw_input('Please Enter Y for yes | N for no: ')
+                    reply = input('Please Enter Y for yes | N for no: ')
                 if reply.upper() == 'Y':
                     print('Overriding default storage database..')
                     amity.save_state()
@@ -202,7 +202,7 @@ class RoomAllocation(cmd.Cmd):
         """Usage: quit"""
         safe_mode()
         os.system('clear')
-        print colored('Application Exiting','red')
+        print(colored('Application Exiting','red'))
         exit()
 
 
@@ -215,4 +215,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         safe_mode() #Save state on KeyboardInterrupt Error
         os.system("clear")
-        print colored('Application Exiting','red')
+        print(colored('Application Exiting','red'))
