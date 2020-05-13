@@ -1,3 +1,6 @@
 *.pyc
 database.sqlite
 .coverage
+*.db
+*.sqlite
+application/data_files/

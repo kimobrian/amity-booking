@@ -1,28 +1,49 @@
+from db_operations import validate_sqlite_db, load_db_state, save_state, print_unallocated, print_allocations, load_people, switch_session
+import os
+from db_models import create_session_db, Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
 class Amity(object):
     '''Amity class'''
 
-    def print_allocations(self, filename=None):
-        pass
+    def __init__(self):
+        if not os.path.exists('session_amity.db'):
+            create_session_db()
+            engine = create_engine('sqlite:///session_amity.db')
+            Base.metadata.bind = engine
+            DBSession = sessionmaker(bind=engine)
+            session = DBSession()
+            switch_session(session)
 
-    def save_state(self, db_name):
+    def print_allocations(self, filename=None):
+        '''Prints a list of allocations to the screen'''
+        return print_allocations(filename)
+
+    def save_state(self, db_name='default_amity.db'):
         """
                 Save current state of operations to database
         """
-        pass
+        save_state(db_name)
 
     def check_db_name(self, db_name):
-        '''Check if db file exists'''
-        pass
-        
+        '''Check if db file exists and is sqlite db'''
+        return validate_sqlite_db(db_name)
+
     def load_state(self, db_name):
         """
-        Loads Amity infromation from database
+        Loads Amity information from database
         """
-        pass
+        return load_db_state(db_name)
 
     def print_unallocated(self, output_file=None):
         """
                 Prints unallocated people. 
-                Outputs to file if filenam eis provided
+                Outputs to file if filename is provided
         """
-        pass
+        print_unallocated(output_file)
+
+    def load_people(self, filename):
+        '''Load people from a text file and allocate them rooms'''
+        '''Text files should be in data_files folder'''
+        load_people(filename)
